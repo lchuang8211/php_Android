@@ -34,7 +34,8 @@
 		      				<input type="submit" name="submit" value="送出">
 		      			</li>
 		      		</ul>
-		      		
+		      		<?php   $number = $_POST['number'];//android將會傳值到number 
+		      		echo $number ?>
 	      		</div>
 	      	</fieldset>
 	     </form>
