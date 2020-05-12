@@ -25,12 +25,7 @@
       			<ul>
       				<li>
       					<label>showinput</label>
-						   <?php 
-						   		$input1=$_POST['phonedata']; echo "phonedata :" $input1 
-								$obj = json_decode($input1, true);
-								echo $obj[0]["phonedata"] ;
-								print_r($obj);
-						   ?>
+      					 <?php $input1=$_POST['inputTxt']; echo $input1 ?>
       				</li>
       			</ul>
       		</div>
