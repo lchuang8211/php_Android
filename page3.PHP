@@ -12,7 +12,6 @@
       	}
       </style>
       <script>
-
       </script>
     </head>
     
@@ -29,22 +28,26 @@
 
                 $result = file_get_contents('php://input');
                 echo $result;
-
+                $input1 = $result;
                 // echo json_decode(json_encode($result));
-
-
-      					$input1 = $_GET['phoneDataJson']; 
-      					echo "phoneDataJson :" . $input1 . "ok";
-                echo '<br>';
-                $json_data = '{ "phoneDataJson" : "' . $input1 . '" }';
-      					$obj = json_decode($json_data, true);
-      					echo $obj["phoneDataJson"];
-                echo '<br>';
-      					print_r($obj);
+                
+      					// $input1 = $_GET['phoneDataJson']; 
+      					
+                // $json_data = '{ "phoneDataJson" : "' . $input1 . '" }';
+      					
+                if($result!=null && $result!=""){
+                  
+                  echo "phoneDataJson :" . $input1 . "ok";
+                  echo '<br>';
+                  $obj = json_decode($input1, true);
+                  echo $obj["phoneDataJson"];
+                  echo '<br>';
+                  $input1 = $obj["phoneDataJson"];
+                  print_r($obj);
+                }
 
                 echo '<hr>';
-
-                $input1 = $result;
+                
                 $servername = "localhost";
                 $username = "lchuang";
                 $password = "asabee1566";
@@ -59,15 +62,28 @@
                 }
                 echo "<br>";
                 $sql = "select * from fruit";
-                $sql = "insert into fruit (name) Values ('" .  $input1 . "')";
+                
                 if($input1!=null && $input1!=""){
-                  $result = $conn->query($sql);                
-                }
+                  $sql = "insert into fruit (name) Values ('" .  $input1 . "')";
+                  $result = $conn->query($sql);}                
+               /* $sql_select ="select * from fruitname where name='". $input1 ."'";
+$result = $conn->query($sql_select);}
+if ( $result->num_rows > 0) {
+// output data of each row
+while($row = $result->fetch_assoc()) {
+echo "ID: " . $row["id"] . " Name: " . $row["Name"]. " 描述: " . $row["description"]. "<br>";
+}
+} else {
+echo "0 results";
+}
+echo '<hr>';*/
+                
                 $sql = "select * from fruit";
                 $result = $conn->query($sql);
                 if ( $result->num_rows > 0) {
                   // output data of each row
                   while($row = $result->fetch_assoc()) {
+            
                     echo "Name: " . $row["name"] . "<br>";
                   }
                 } else {
