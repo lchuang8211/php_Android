@@ -4,7 +4,7 @@
 			$servername = "localhost";
 			$username = "lchuang";
 			$password = "asabee1566";
-			$dbname = "androiddb";
+			$dbname = "appview_data";
 			// Create connection
 			$conn = new mysqli($servername, $username, $password, $dbname);
 			// Check connection
@@ -14,5 +14,5 @@
 					echo "Connection successfully"."<br>";
 				}
 
-				
+
 		?>
