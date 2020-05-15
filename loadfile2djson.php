@@ -1,44 +1,14 @@
 <?php 
 
-
-
-
-// $json2d = '[
-// 			{
-// 				"id":466,
-// 				"lang":"zh-tw",
-// 				"name":"南鯤鯓代天府",
-// 				"summary":"", 
-// 				"open_time":"主殿-06:00~21:00、大鯤園-08:00~17:00、凌霄寶殿-07:30~17:00(全年無休)",
-// 				"district":"北門區",
-// 				"address":"727 臺南市北門區鯤江976號",
-// 				"tel":"+886-6-7863711",
-// 				"fax":"",
-// 				"lat":23.28647,
-// 				"long":120.14159,
-// 				"services":[ ],
-// 				"category":[ 
-// 							"歷史古蹟",
-// 							"宗教廟宇",
-// 							"在地藝文",
-// 							"無障礙設施"
-// 							],
-// 				"update_time":"2020-05-04 18:08:31"
-// 			}
-// ]';
-
-	$myFile = "台南景點";
-	$myDir = "jsonfile";
-	$handle = fopen($myDir."/".$myFile.".json","rb");
-	$content = "";
-
+	$myFile = "台南景點";    //輸入檔案名稱
+	$myDir = "jsonfile";	//輸入檔案的路徑(絕對或相對)
+	$handle = fopen($myDir."/".$myFile.".json","rb"); // "rb" 讀取二進位檔並寫入資料
+	$jsonArray = "";
 	while (!feof($handle)) {
-		$content .= fread($handle, 10000);
+		$jsonArray .= fread($handle, 10000);  //讀取檔案複製過去
 	}
 	fclose($handle);
-	$content = json_decode($content,JSON_NUMERIC_CHECK);
-	// echo count($content);
-	
+	$jsonArray = json_decode($jsonArray,JSON_NUMERIC_CHECK); //json解析	
 	
 	require("dbconnect.php");
 	$tmparraySchema =  array(); // 儲存jsonArray的所有欄位名稱 ( Schema )
@@ -46,21 +16,15 @@
 	$arraySchema="'";
 	$getSchemaDataType=array();  //儲存所有欄位的資料型別
 	$sqlTableSchema=""; //儲存要上傳的SQL指令
-	foreach ($content[0] as $t1_schema => $t1_value) {
+	foreach ($jsonArray[0] as $t1_schema => $t1_value) {
 		//透過 $t1_schema 取得欄位名稱
 		$tmparraySchema[count($tmparraySchema)]=$t1_schema;
 		//透過 $t1_value/$t2_value 取得欄位的資料型態
 		// $getSchemaDataType[count($getSchemaDataType)]=gettype($t1_value);
-		$DataType = gettype($t1_value);
-		if(is_string($t1_value)){
-			echo  strlen($t1_value)." -strlen- "."<br>";
-			// if (strlen($t1_value)>500){ 
-			//   $getSchemaDataType[count($getSchemaDataType)] = "text";
-			// }
-		}
+		$DataType = gettype($t1_value);		
 		if ( is_array($t1_value) || is_string($t1_value) ) {  // 含 Array 型別再繼續做判斷
 			$t2_SchemaDataType=array();	// 儲存Array欄位的內部資料型別	
-			// foreach ($t1_value as $t2_schema => $t2_value) {
+			// foreach ($t1_value as $t2_schema => $t2_value) {  //讀取內部陣列的欄位的資料型態
 			//  	$t2_SchemaDataType[count($t2_SchemaDataType)]=gettype($t2_value);
 			// }
 			// $getSchemaDataType[count($getSchemaDataType)-1]=gettype("string");
@@ -68,49 +32,53 @@
 		}
 		$arraySchema=$t1_schema;
 		// echo $t1_schema." ";
-		$sqlTableSchema=$sqlTableSchema."`".$t1_schema."` ". $DataType ." NOT NULL,";
+		$sqlTableSchema= $sqlTableSchema."`".$t1_schema."` ". $DataType ." NOT NULL,";
 	}
 	$sqlTableSchema = substr($sqlTableSchema,0,-strlen(","));
 	echo '<hr>';		
-	print_r($tmparraySchema);echo '<br>';
-	print_r($getSchemaDataType);echo '<br>';
-	print_r($t2_SchemaDataType);echo '<br>';
+	// print_r($tmparraySchema);echo '<br>';
+	// print_r($getSchemaDataType);echo '<br>';
+	// print_r($t2_SchemaDataType);echo '<br>';
 	echo '<hr>';
-	print_r($sqlTableSchema."<br>");
-	echo "<hr>";
-	
+	// print_r($sqlTableSchema."<br>");
+	echo "<hr>";	
 	// $sqlTableSchema= "`".$tmparraySchema[0]."` ".$getSchemaDataType[0]." NOT NULL, ";
 	// print_r($sqlTableSchema."<br>");
 	// $sqlTableSchema1= "`".$tmparraySchema[1]."` ".$getSchemaDataType[1]." NOT NULL, ";
 	// print_r($sqlTableSchema1."<br>");
 
-	
-
-	$sqlCreateTable = "create table `androiddb`.`autoView` (". $sqlTableSchema .") ENGINE = InnoDB;";
+	//create table if not exists 不存在TABLE則建立
+	$sqlCreateTable = "create table if not exists `androiddb`.`autoView1` (". $sqlTableSchema .") ENGINE = InnoDB;";
 	print_r($sqlCreateTable."<hr>");
-	$conn->query($sqlCreateTable);
-
-	"CREATE TABLE `androiddb`.`view` ( `ID` INT NOT NULL , `gender` TEXT NOT NULL , `n5d` DOUBLE NOT NULL , `6hjfgh` DATE NOT NULL ) ENGINE = InnoDB;";
-	// $content = $jsonArray
-	foreach ($content as $key => $value) {	
+	$conn->query($sqlCreateTable);  //執行自動建立Table
+		
+	foreach ($jsonArray as $key => $value) {
+	$sqlInsertValue="";  // 最後要Insert的值
+	$insert_value="";	 // 如果有多重陣列要Insert的值
 		if($value != "" && $value!=null){
 			foreach ($value as $t1_schema => $t1_value) {	
-				if ( is_array($t1_value) )  {
+				if ( is_array($t1_value) )  {  //值內含陣列
 					$t2_value_array = "";
 					foreach ($t1_value as $key2 => $t2_value) {
 						$t2_value_array = $t2_value_array . $t2_value . "、";
 					}	
 						echo $t1_schema . " : " . substr($t2_value_array, 0, -strlen("、"));
-				}else{
+						$insert_value=substr($t2_value_array, 0, -strlen("、"));
+				}else{  //單純是值
 					echo $t1_schema . " : " . $t1_value;
+					$insert_value=$t1_value;
 				}
 				echo "<br>";
-
-			}
-
+				$sqlInsertValue = $sqlInsertValue . "'". $insert_value ."',";				
+			}		
+			echo "<hr>";
+			$sqlInsertValue = substr($sqlInsertValue,0, -strlen(","));
+			$sqlInsertCommand = "INSERT INTO `autoview1` (`id`, `lang`, `name`, `summary`, `introduction`, `open_time`, `district`, `address`, `tel`, `fax`, `lat`, `long`, `services`, `category`, `update_time`) VALUES (".  $sqlInsertValue  .");";			
+			$conn->query($sqlInsertCommand);  //執行自動加入資料到autoview		
 		}
-		echo "<hr>";
-		$sqlInsert = "";
 	}
+	
+	
+
 
 ?>
