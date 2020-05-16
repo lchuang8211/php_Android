@@ -1,35 +1,36 @@
 
 <?php
-	// $conn=null;
-    $input1 = file_get_contents('php://input');
-    // echo $result;
-    // $input1 = $result;
-    // echo json_decode(json_encode($result));
+	/////////// input data from android ///////////
+    $input1 = file_get_contents("php://input",'r');
     
-	// $input1 = $_GET['phoneDataJson']; 			      					
-    // $json_data = '{ "phoneDataJson" : "' . $input1 . '" }';			      					
-    // if($result!=null && $result!=""){
-      
-    //   echo "phoneDataJson :" . $input1 . "ok";
-    //   echo '<br>';
+    // function str_to_utf8 ($str = '') {
+    $input1= iconv("GBK", "UTF-8", $input1);
+    $current_encode = mb_detect_encoding($input1, array("ASCII","GB2312","GBK",'BIG5','UTF-8')); 
+    $encoded_str = mb_convert_encoding($input1, 'UTF-8', $current_encode);
+    $input1 = $encoded_str;
     
-    //   echo $obj["phoneDataJson"];
-    //   echo '<br>';
-    if($input1!=null && $input1!=""){ 
-    	$obj = json_decode($input1, true); 
-    	$input1 = $obj["phoneDataJson"]; 
-    }
-    // print_r($obj);
-    // }
+    echo var_dump($input1)." ";
+    
 
-    // echo '<hr>';
-    // 連接資料庫
-    
-    
+    if($input1!=null && $input1!=""){ 
+        // str_replace("\n", "", $input1)
+        if(substr($input1,0,3) == pack("CCC",0xEF,0xBB,0xBF)) 
+            $input1 = substr($input1,3);
+        $input1 = json_decode( trim($input1,chr(239).chr(187).chr(191)),  true);
+        echo var_dump($input1)."+ ";
+        $input1 = $input1["phoneDataJson"];
+        // echo "json_last_error : ".json_last_error()." - ";
+    }    
+   // echo var_dump($input1);
+    /////////// input data from android ///////////
+   
+    // if(substr($input1,0,3) == pack("CCC",0xEF,0xBB,0xBF)) 
+            // $input1 = substr($input1,3);
+     // 連接資料庫
  	$servername = "localhost";
     $username = "lchuang";
     $password = "asabee1566";
-    $dbname = "androiddb";
+    $dbname = "appview_data";
     // Create connection
     $conn = new mysqli($servername, $username, $password, $dbname);
     // Check connection
@@ -47,15 +48,15 @@
     // if($input1!=null && $input1!=""){
     //   $sql = "insert into fruit (name) Values ('" .  $input1 . "')";
     //   $result = $conn->query($sql);                  
-    // }     
-    
-    $sql_select = "select * from fruitname where name='". $input1 ."'";
-    $result = $conn->query($sql_select);
+    // }     `name` as 景點, `lat`as 緯度,`long` as 經度
+    $sql_ViewSelect = "select `name`,`lat`,`long` from 台南景點 where id = '". $input1 ."';";
+    $sql_select = "select * from 台南景點 where name='". $input1 ."'";
+    $result = $conn->query($sql_ViewSelect);
     if ( $result->num_rows > 0) {
         // output data of each row
         // while($row = $result->fetch_assoc()) {
     	$row = $result->fetch_assoc();
-    	$phpJson = json_encode($row);
+    	$phpJson = json_encode($row,true);
     	echo $phpJson;
         // echo "ID: " . $row["ID"] . " Name: " . $row["Name"]. " 描述: " . $row["description"];
         // }
