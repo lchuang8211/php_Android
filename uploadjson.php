@@ -19,7 +19,20 @@
 			
 			<input type="file" name="userfile"/><br>
 			<input type="submit" value="submit" name="submit">
+			
 		</form>
+		<form method="post" enctype="text/plain">
+			<input action="http://hhlc.ddnsking.com/uploadjson.php" type="submit" value="檢查(沒作用)" name="checkTable">
+			<?php
+				if(isset($_POST['checkTable'])){
+					$this->checkTable();
+					print_r("123");
+				}
+				function checkTable(){
+					print_r("123");
+				}				
+			?>
+			</form>
     </body>
 </html>
 
