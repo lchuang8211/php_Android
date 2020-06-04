@@ -1,4 +1,9 @@
 <?php
+//設定header 
+    header("Content-type:text/html; charset=utf-8");  //Content-type:text/json
+    mb_internal_encoding('UTF-8');
+    mb_http_input('UTF-8');
+    mb_http_output('UTF-8');
 // $uploaddir = 'C:\xampp\htdocs\getfile';
 $uploaddir = 'C:\xampp\htdocs\getfile';
 // ini_set('file_uploads','ON');
@@ -28,11 +33,48 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])){
 	}
 	fclose($handle);
 	
+	// $jsonArray = urldecode($jsonArray);   // 必要條件 避免中文亂碼
+
+    if(substr($jsonArray,0,3) == pack("CCC",0xEF,0xBB,0xBF))   //去BOM檔頭
+    	$jsonArray = substr($jsonArray,3);
+
 	// $jsonArray = json_encode($jsonArray);
 	$jsonArray = json_decode($jsonArray,JSON_NUMERIC_CHECK | true); //json解析	
+
+	function printValues($arr) {
+	    global $count;
+	    global $values;
+	    
+	    // Check input is an array
+	    if(!is_array($arr)){
+	        die("ERROR: Input is not an array");
+	    }
+	    
+	    /*
+	    Loop through array, if value is itself an array recursively call the
+	    function else add the value found to the output items array,
+	    and increment counter by 1 for each value found
+	    */
+	    foreach($arr as $key=>$value){
+	        if(is_array($value)){
+	            printValues($value);
+	        } else{
+	            $values[] = $value;
+	            $count++;
+	        }
+		}	
+
+    
+	    // Return total count and values found in array
+	    return array('total' => $count, 'values' => $values);
+	}
+	// $jsonArray=printValues($jsonArray);
+
 	// str_replace(array("\r", "\n", "\r\n", "\n\r"), '', $jsonArray);
 	// var_dump($jsonArray);
+
 	require("dbconnect.php");
+
 	$tmparraySchema =  array(); // 儲存jsonArray的所有欄位名稱 ( Schema )
 	// echo count($arraySchema);
 	$arraySchema="";
@@ -54,6 +96,8 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])){
 			// $getSchemaDataType[count($getSchemaDataType)-1]=gettype("string");
 			$DataType = "text";  //因為MySQL沒有Array的資料型態所以存沒TEXT (STRING)
 		}
+		if ($DataType=='NULL') 
+			$DataType = "text";
 		$arraySchema = $t1_schema;
 		// echo $t1_schema." ";
 		$sqlTableSchema = $sqlTableSchema."`".$t1_schema."` ". $DataType ." NOT NULL,";
@@ -73,10 +117,10 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])){
 	// $sqlTableSchema1= "`".$tmparraySchema[1]."` ".$getSchemaDataType[1]." NOT NULL, ";
 	// print_r($sqlTableSchema1."<br>");
 
-	//create table if not exists 不存在TABLE則建立
+	// create table if not exists 不存在TABLE則建立
 	$tableName = $myFile;
 	$sqlCreateTable = "create table if not exists `appview_data`.`".$tableName."` (". $sqlTableSchema .") ENGINE = InnoDB;";
-	// print_r($sqlCreateTable."<hr>");
+	// // print_r($sqlCreateTable."<hr>");
 	$conn->query($sqlCreateTable);  //執行自動建立Table
 	
 	foreach ($jsonArray as $key => $value) {
