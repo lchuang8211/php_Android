@@ -18,15 +18,28 @@
     }
 
     require("dbconnect.php");
-    $sql_select_list = "select * from `user_travel_plan`.`all_plan_list`";
+    $sql_innerjoin = "SELECT `list`.*, `member`.`head_img`, `member`.`account`,`member`.`user_name` FROM `user_travel_plan`.`plan_list` as `list`, `user_travel_plan`.`member` as `member` where `list`.`id` = `member`.`id`";
+    $innerjoin_result = mysqli_query($conn,$sql_innerjoin);
+    $sql_select_list = "select * from `user_travel_plan`.`plan_list`";
     $result = mysqli_query($conn,$sql_select_list);
     $phpJsonArray=array();
+    $phpJsonJoin = array();
     while ($row = $result->fetch_assoc()) {
         // echo $row["TRAVEL_LIST_SCHEMA_PLAN_NAME"];
-        array_push($phpJsonArray,$row); 
+        $joinrow = $innerjoin_result->fetch_assoc();
+        // echo ($innerjoin_result);
+        array_push($phpJsonJoin,$joinrow);
+        // $getID = $row["id"];
+        // $sql_getheadImg = "select `head_img` from `user_travel_plan`.`member` where `id`='".$getID."'";        
+        // $result = mysqli_query($conn,$sql_getheadImg);
+        // $himg = $result->fetch_assoc();
+
+        // array_push($phpJsonArray,$row);
+        // array_push($phpJsonArray,$himg);
     }
 
-    echo json_encode($phpJsonArray,JSON_UNESCAPED_UNICODE|true);
+    // echo json_encode($phpJsonArray,JSON_UNESCAPED_UNICODE|true);
+    echo json_encode($phpJsonJoin,JSON_UNESCAPED_UNICODE|true);
     // var_dump($phpJson);
             
 ?>

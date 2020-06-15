@@ -20,6 +20,13 @@
         $requestCity = $input1["CITY_NAME_REQUEST"];
         $requestCity = urldecode($requestCity);        
         $requestType = $input1["SPOT_TYPE_REQUEST"];
+        $getUserLatitude = $input1["USER_LOCATION_LATITUDE"];
+        if(!empty($input1["USER_LOCATION_LONGITUDE"])){
+            $getUserLongitude = $input1["USER_LOCATION_LONGITUDE"];
+        
+
+        }
+        // $getSearch = $input1["EDITTXT_SEARCH_INPUT"];
         
         // $requestSearch = $input1["EDITTXT_SEARCH_INPUT"]; EDITTXT_SEARCH_INPUT
     /////////// input data from android ///////////
@@ -31,9 +38,21 @@
             require("dbconnect.php");
          	// 連接資料庫 //
             $phpJson=array();
-            // `name` as 景點, `lat`as 緯度,`long` as 經度  `Name`,`Py`,`Px`,`Add`,`Toldescribe`,`Picture1`, `Picture2`,`Picture3`
-            $sql_ViewSelect="select `Name`,`Px`,`Py`,`Add`,`Toldescribe` from 景點觀光資訊資料庫 where Region = '". $requestCity ."';";
-            // echo $sql_ViewSelect;
+            if($requestType=="SPOT_TYPE_VIEW"){                    
+                // `name` as 景點, `lat`as 緯度,`long` as 經度  `Name`,`Py`,`Px`,`Add`,`Toldescribe`,`Picture1`, `Picture2`,`Picture3`
+                $sql_ViewSelect="select `Name`,`Px`,`Py`,`Add`,`Toldescribe` from 景點觀光資訊資料庫 where Region = '". $requestCity ."';";
+                // echo $sql_ViewSelect;
+                if(!empty($getUserLatitude) && !empty($getUserLongitude)){
+                $sql_ViewSelect = "SELECT `Name`,`Px`,`Py`,`Add`,`Toldescribe` from 景點觀光資訊資料庫 where Region = '". $requestCity ."' && ((`Py`- ".$getUserLatitude."< 0.02) && (`Px`-".$getUserLongitude." < 0.02) && (".$getUserLatitude."-`Py` < 0.02) && (".$getUserLongitude."-`Px`< 0.02));";
+                }
+            }
+            if($requestType=="SPOT_TYPE_HOTEL"){
+                // `name` as 景點, `lat`as 緯度,`long` as 經度  `Name`,`Py`,`Px`,`Add`,`Toldescribe`,`Picture1`, `Picture2`,`Picture3`
+                $sql_ViewSelect="SELECT `Name`,`Px`,`Py`,`Add`, Description as Toldescribe from 旅館民宿觀光資訊資料庫 where Region = '". $requestCity ."';";
+                // echo $sql_ViewSelect;
+                
+            }
+
             $count=0;
             $result = mysqli_query($conn,$sql_ViewSelect);
             // echo mysqli_num_rows($result);
@@ -46,8 +65,8 @@
                 	// $row = $result->fetch_assoc();
                     // var_dump($row);
                     // $count=count($row);
-                    // for($i=0;$i<$count;$i  ){ 
-                    //     unset($row[$i]);//刪除冗餘資料 
+                    // for( $i=0;$i<$count;$i ){
+                    //     unset($row[$i]);//刪除冗餘資料
                     // }
                     
                     array_push($phpJsonArray,$row); 
